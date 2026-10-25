@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">SidePanel — your desktop status, at a glance</title>
+  <desc id="desc">A terminal inspired status panel for hardware, smart home, weather, services and focus.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07110d"/><stop offset="1" stop-color="#101b17"/></linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#43f5a5"/><stop offset="1" stop-color="#a0ffc8"/></linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#163027" stroke-width="1" opacity=".48"/></pattern>
+    <filter id="soft"><feGaussianBlur stdDeviation="24"/></filter>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
+  <circle cx="1035" cy="185" r="180" fill="#18d889" opacity=".07" filter="url(#soft)"/>
+  <path d="M0 555C260 485 410 625 680 555s410-72 600-28v113H0Z" fill="#0b1712" opacity=".72"/>
+  <g transform="translate(0 14)" font-family="Consolas, 'SFMono-Regular', monospace">
+    <rect x="90" y="112" width="52" height="52" rx="12" fill="#10251b" stroke="#43f5a5" stroke-opacity=".6"/>
+    <path d="m103 128 12 10-12 10m12 1h12" fill="none" stroke="url(#glow)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="160" y="141" fill="#8da99a" font-size="15" letter-spacing="2.5">PERSONAL DESKTOP DASHBOARD</text>
+    <text x="86" y="270" fill="#eafff2" font-size="88" font-weight="700" letter-spacing="-5">SidePanel</text>
+    <rect x="92" y="298" width="58" height="4" rx="2" fill="#43f5a5"/>
+    <text x="90" y="359" fill="#bbd1c4" font-size="25">Your desktop status, at a glance.</text>
+    <text x="90" y="407" fill="#829d8e" font-size="17">Hardware · Smart home · Weather · Focus</text>
+  </g>
+  <g transform="translate(690 103)" font-family="Consolas, 'SFMono-Regular', monospace">
+    <rect x="0" y="0" width="505" height="405" rx="18" fill="#08110d" stroke="#345344" stroke-width="1.5"/>
+    <path d="M0 18a18 18 0 0 1 18-18h469a18 18 0 0 1 18 18v36H0Z" fill="#111f18"/>
+    <circle cx="24" cy="27" r="5" fill="#f07878"/><circle cx="43" cy="27" r="5" fill="#e8c66a"/><circle cx="62" cy="27" r="5" fill="#43d990"/>
+    <text x="91" y="32" fill="#799487" font-size="12" letter-spacing="1.5">SIDE PANEL / OVERVIEW</text>
+    <text x="27" y="91" fill="#dff6e8" font-size="20">SYSTEM STATUS</text><text x="387" y="91" fill="#43f5a5" font-size="12">● ONLINE</text>
+    <g fill="#111f18" stroke="#2c4a3a">
+      <rect x="25" y="111" width="136" height="91" rx="9"/><rect x="184" y="111" width="136" height="91" rx="9"/><rect x="343" y="111" width="136" height="91" rx="9"/>
+    </g>
+    <g fill="#7e9a8a" font-size="12"><text x="41" y="137">CPU</text><text x="200" y="137">MEMORY</text><text x="359" y="137">NETWORK</text></g>
+    <g fill="#e8fff0" font-size="26"><text x="41" y="171">24%</text><text x="200" y="171">12.4</text><text x="359" y="171">↓ 8.2</text></g>
+    <g fill="#749181" font-size="10"><text x="41" y="190">LOAD</text><text x="200" y="190">/ 32 GB</text><text x="359" y="190">MB/S</text></g>
+    <text x="27" y="239" fill="#dff6e8" font-size="15">PERFORMANCE</text>
+    <path d="M28 299h450" stroke="#1c3528"/><path d="M28 276h450M28 322h450" stroke="#1c3528" stroke-dasharray="3 6"/>
+    <path d="M30 303 66 297 101 305 135 279 171 286 207 264 243 275 279 261 315 271 351 248 387 259 423 241 476 248" fill="none" stroke="#43f5a5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M30 303 66 297 101 305 135 279 171 286 207 264 243 275 279 261 315 271 351 248 387 259 423 241 476 248v84H30Z" fill="#43f5a5" opacity=".07"/>
+    <g transform="translate(26 357)">
+      <rect width="143" height="30" rx="6" fill="#13241b"/><circle cx="15" cy="15" r="4" fill="#43f5a5"/><text x="27" y="20" fill="#b9d4c4" font-size="11">HOME ASSISTANT</text>
+      <rect x="155" width="143" height="30" rx="6" fill="#13241b"/><path d="M174 10v10m-5-5h10" stroke="#83d9ad" stroke-width="1.5"/><text x="188" y="20" fill="#b9d4c4" font-size="11">WEATHER</text>
+      <rect x="310" width="143" height="30" rx="6" fill="#13241b"/><circle cx="326" cy="15" r="6" fill="none" stroke="#83d9ad"/><path d="M326 11v4l3 2" stroke="#83d9ad" fill="none"/><text x="340" y="20" fill="#b9d4c4" font-size="11">FOCUS TIMER</text>
+    </g>
+  </g>
+</svg>

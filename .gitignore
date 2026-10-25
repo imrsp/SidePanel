@@ -1,0 +1,40 @@
+# Dependencies and generated build files
+node_modules/
+bin/
+obj/
+/backend/wwwroot/
+/work/
+/dist/
+/releases/
+
+# Local instance data, credentials and logs
+data/
+settings.json
+settings.json.tmp
+command-history.json
+*.log
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+*.pem
+
+# Editor and OS state
+.vs/
+.idea/
+*.user
+*.suo
+Thumbs.db
+.DS_Store
+AGENTS.md
+
+# Historical local design and verification material
+/docs/
+
+# Automated test output
+test-results/
+playwright-report/
+TestResults/
+coverage/

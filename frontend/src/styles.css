@@ -1,0 +1,6 @@
+:root{font-family:'Share Tech Mono','Consolas',monospace;color:var(--text);background:var(--bg);font-synthesis:none;--bg:#050c09;--surface:#070f0c;--accent:#8befb8;--text:#b9d3ca;--muted:#68867a;--line:#426c57;--grid:#244034;--warn:#e6c365;--glow:rgba(139,239,184,.07);color-scheme:dark}
+:root[data-theme=graphite]{--bg:#101317;--surface:#14191e;--accent:#c4d5e7;--text:#c4cbd3;--muted:#7c8996;--line:#4a5868;--grid:#29333f;--warn:#dfba75;--glow:transparent}
+*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button,a{touch-action:manipulation}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--warn);outline-offset:3px}sidepanel-app{display:block}
+
+
+*{scrollbar-width:none!important}*::-webkit-scrollbar{display:none;width:0;height:0}

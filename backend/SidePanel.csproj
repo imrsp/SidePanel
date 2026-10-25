@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
+    <Authors>imrsp</Authors>
+    <RepositoryUrl>https://github.com/imrsp/SidePanel</RepositoryUrl>
+    <ApplicationIcon>Assets\SidePanel.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <SatelliteResourceLanguages>en;zh-Hans</SatelliteResourceLanguages>
+    <SelfContained>false</SelfContained>
+    <UseAppHost>true</UseAppHost>
+    <RollForward>LatestPatch</RollForward>
+    <PathMap Condition="'$(Configuration)' == 'Release'">$(MSBuildProjectDirectory)=/_/SidePanel/backend</PathMap>
+  </PropertyGroup>
+  <ItemGroup><EmbeddedResource Include="Assets\SidePanel.ico" /></ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepositoryUrl</_Parameter1>
+      <_Parameter2>$(RepositoryUrl)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <ItemGroup><PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" /></ItemGroup>
+  <ItemGroup><Content Include="wwwroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup>
+    <Content Update="data\**\*" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+    <None Update="data\**\*" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+  <!-- Vite emits hashed file names; PreserveNewest only adds files, so old bundles would stay in the output. -->
+  <Target Name="CleanCopiedWwwroot" BeforeTargets="BeforeBuild"
+          Condition="'$(DesignTimeBuild)' != 'true' and Exists('$(MSBuildProjectDirectory)\wwwroot\index.html')">
+    <RemoveDir Directories="$(OutDir)wwwroot" />
+  </Target>
+</Project>

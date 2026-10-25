@@ -1,0 +1,171 @@
+name: CI
+
+on:
+  push:
+    branches: [main, beta]
+  pull_request:
+    branches: [main, beta]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and smoke test
+    runs-on: windows-2025
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare work directory
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path work -Force | Out-Null
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.4xx
+
+      - name: Check .NET SDK feature band
+        shell: pwsh
+        run: |
+          $sdkText = (dotnet --version).Trim()
+          if ($LASTEXITCODE) { throw 'Could not read the installed .NET SDK version.' }
+          if ($sdkText -notmatch '^10\.0\.4\d{2}$') { throw "Expected .NET 10.0.4xx SDK, got $sdkText." }
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Check runner toolchain
+        shell: pwsh
+        run: |
+          if ($PSVersionTable.PSVersion -lt [version]'7.4') { throw "PowerShell 7.4+ is required; runner has $($PSVersionTable.PSVersion)." }
+          if (!(Get-Command Start-Process).Parameters.ContainsKey('Environment')) { throw 'Start-Process -Environment is required by the smoke test.' }
+          dotnet --version
+          node --version
+          pnpm --version
+
+      - name: Build frontend
+        shell: pwsh
+        run: |
+          Push-Location frontend
+          try {
+            pnpm install --frozen-lockfile
+            if ($LASTEXITCODE) { throw 'Frozen frontend dependency installation failed.' }
+            pnpm run build
+            if ($LASTEXITCODE) { throw 'Frontend build failed.' }
+          } finally { Pop-Location }
+
+      - name: Restore backend dependencies
+        shell: pwsh
+        run: dotnet restore backend/SidePanel.csproj --runtime win-x64 --locked-mode
+
+      - name: Build backend
+        shell: pwsh
+        run: dotnet build backend/SidePanel.csproj --configuration Release --runtime win-x64 --no-restore
+
+      - name: Publish app
+        shell: pwsh
+        run: dotnet publish backend/SidePanel.csproj --configuration Release --runtime win-x64 --self-contained false --no-restore --output work/ci-app
+
+      - name: Run app smoke test
+        shell: pwsh
+        run: ./scripts/tests/smoke.ps1 -AppDirectory work/ci-app
+
+      - name: Check runtime framework dependencies
+        shell: pwsh
+        run: |
+          $runtimeConfig = Get-Content work/ci-app/SidePanel.runtimeconfig.json -Raw | ConvertFrom-Json
+          $frameworks = @($runtimeConfig.runtimeOptions.frameworks.name)
+          if ($frameworks -contains 'Microsoft.AspNetCore.App') { throw 'ASP.NET runtime dependency remains.' }
+          if ($frameworks -notcontains 'Microsoft.WindowsDesktop.App') { throw 'Windows Desktop runtime dependency is missing.' }
+
+      - name: Validate and preview GitHub Release metadata
+        shell: pwsh
+        run: ./scripts/tests/release-metadata.ps1 -ProjectFile backend/SidePanel.csproj -ChangelogFile Changelog.md -OutputFile work/release-metadata.json
+
+      - name: Prepare licenses and release archive
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        shell: pwsh
+        run: |
+          $archiveName = (Get-Content work/release-metadata.json -Raw | ConvertFrom-Json).archive
+          ./scripts/modules/licenses.ps1 -OutputDirectory work/ci-app
+          ./scripts/modules/package.ps1 -Staging work/ci-app -Output (Join-Path work $archiveName)
+          ./scripts/tests/package.ps1 -Archive (Join-Path work $archiveName)
+      - name: Check PowerShell scripts for parse errors
+        shell: pwsh
+        run: |
+          $files = @('scripts/build.ps1', 'scripts/deploy.ps1', 'scripts/verify.ps1') + @(Get-ChildItem scripts -Recurse -Filter '*.ps1' | ForEach-Object FullName)
+          $errors = foreach ($file in ($files | Select-Object -Unique)) {
+            $tokens = $null
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$parseErrors) | Out-Null
+            foreach ($errorItem in $parseErrors) { "${file}: $($errorItem.Message) at $($errorItem.Extent.StartLineNumber)" }
+          }
+          if ($errors) { throw ($errors -join [Environment]::NewLine) }
+      - name: Upload release archive
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sidepanel-release
+          path: |
+            work/SidePanel-v*-win-x64.zip
+            work/release-metadata.json
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: test
+    runs-on: windows-2025
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: sidepanel-release
+          path: work
+      - name: Prepare release archive
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path work -Force | Out-Null
+          $metadata = Get-Content work/release-metadata.json -Raw | ConvertFrom-Json
+          if (!(Test-Path (Join-Path work $metadata.archive))) { throw "Release archive '$($metadata.archive)' was not downloaded." }
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_PROMPT_DISABLED: 1
+        shell: pwsh
+        run: |
+          $metadata = Get-Content work/release-metadata.json -Raw | ConvertFrom-Json
+          $tag = $metadata.tag
+          $notesPath = Join-Path $env:RUNNER_TEMP 'release-notes.md'
+          Set-Content -Path $notesPath -Value $metadata.body -NoNewline
+          $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
+          $tagObject = ($remoteTag -split '\s+')[0]
+          $releaseExists = $false
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) { $releaseExists = $true }
+          if (!$releaseExists) {
+            if (!$tagObject) { git tag $tag $env:GITHUB_SHA; git push origin $tag }
+            gh release create $tag (Join-Path work $metadata.archive) --title $metadata.title --notes-file $notesPath --target $env:GITHUB_SHA
+          } else {
+            gh release edit $tag --title $metadata.title --notes-file $notesPath
+            gh release upload $tag (Join-Path work $metadata.archive) --clobber
+          }

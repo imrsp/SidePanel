@@ -1,0 +1,12 @@
+<Project>
+  <!-- Applies to the backend and test projects, including direct dotnet run/build.
+       Uses Windows PowerShell by default so builds do not depend on pwsh being on PATH.
+       Override with -p:PrunePowerShell=pwsh when a PowerShell 7 host is preferred. -->
+  <PropertyGroup>
+    <PrunePowerShell Condition="'$(PrunePowerShell)' == ''">$(SystemRoot)\System32\WindowsPowerShell\v1.0\powershell.exe</PrunePowerShell>
+  </PropertyGroup>
+  <Target Name="PruneObsoleteBuildOutputs" BeforeTargets="PrepareForBuild"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(TargetFramework)' != '' and '$(TargetFrameworks)' == ''">
+    <Exec Command="&quot;$(PrunePowerShell)&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)scripts/modules/prune-build-outputs.ps1&quot; -ProjectDirectory &quot;$(MSBuildProjectDirectory)&quot; -Configuration &quot;$(Configuration)&quot; -TargetFramework &quot;$(TargetFramework)&quot;" />
+  </Target>
+</Project>
